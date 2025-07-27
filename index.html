@@ -1,0 +1,379 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anosz Shop</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      color: #333;
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      background: #007bff;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      font-size: 1.5rem;
+    }
+    button {
+      padding: 0.4rem 0.8rem;
+      margin: 0.25rem;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .dark-mode {
+      background: #121212;
+      color: #fff;
+    }
+    .dark-mode header {
+      background: #222;
+    }
+    #app {
+      padding: 1rem;
+    }
+    .product, .game-box {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      border-radius: 10px;
+      margin: 0.5rem 0;
+      background: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .product img, .game-box img {
+      width: 80px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .game-box img {
+      width: 150px;
+      height: 84px;
+    }
+    input, select, textarea {
+      margin: 0.25rem 0;
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 300px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+    }
+    .cart-btn {
+      background: orange;
+      margin-top: 1rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Anosz Shop</h1>
+    <div>
+      <button onclick="toggleDarkMode()">🌓</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+  <div id="app"></div>
+  <script>
+    let currentUser = null;
+    let cart = [];
+    let products = [
+      { name: 'Panel 1GB-Unli', price: 1000, image: 'https://raw.githubusercontent.com/r-natio/cloud/main/uploads/_1753534715316.jpg', desc: 'Panel privat berkualitas.', stok: true },
+      { name: 'Produk B', price: 60000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+B', desc: 'Produk B terbaik.', stok: true },
+      { name: 'Produk C', price: 70000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+C', desc: 'Produk C premium.', stok: true },
+      { name: 'Produk D', price: 80000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+D', desc: 'Produk D favorit.', stok: true },
+      { name: 'Produk E', price: 90000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+E', desc: 'Produk E terjangkau.', stok: true },
+      { name: 'Produk F', price: 65000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+F', desc: 'Produk F ringan.', stok: true },
+      { name: 'Produk G', price: 120000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+G', desc: 'Produk G unggulan.', stok: true },
+      { name: 'Produk H', price: 45000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+H', desc: 'Produk H irit.', stok: true },
+      { name: 'Produk I', price: 100000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+I', desc: 'Produk I terbaru.', stok: true },
+      { name: 'Produk J', price: 75000, image: 'https://via.placeholder.com/150/007bff/ffffff?text=Produk+J', desc: 'Produk J eksklusif.', stok: true }
+    ];
+    let games = [
+      { name: 'Akun ML Sultan', image: 'https://via.placeholder.com/640x360/0000FF/FFFFFF?text=ML+Sultan', desc: 'Akun ML dengan banyak skin dan rank tinggi.' },
+      { name: 'Akun FF Rare', image: 'https://via.placeholder.com/640x360/FF0000/FFFFFF?text=FF+Rare', desc: 'Akun Free Fire dengan bundle langka.' },
+      { name: 'Akun PUBG Pro', image: 'https://via.placeholder.com/640x360/00FF00/000000?text=PUBG+Pro', desc: 'Akun PUBG dengan win rate tinggi.' },
+      { name: 'Akun Genshin AR50', image: 'https://via.placeholder.com/640x360/FFFF00/000000?text=Genshin+AR50', desc: 'Akun Genshin Impact dengan banyak karakter bintang 5.' },
+      { name: 'Akun Valorant Epic', image: 'https://via.placeholder.com/640x360/FFA500/000000?text=Valorant+Epic', desc: 'Akun Valorant dengan banyak skin senjata.' }
+    ];
+
+    if (localStorage.getItem('currentUser')) {
+      currentUser = localStorage.getItem('currentUser');
+      showShop();
+    } else {
+      showLogin();
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      currentUser = null;
+      showLogin();
+    }
+
+    function showLogin() {
+      document.getElementById('app').innerHTML = `
+        <h2>Login</h2>
+        <input id="login-user" placeholder="Username"><br/>
+        <input id="login-pass" placeholder="Password" type="password"><br/>
+        <button onclick="login()">Login</button>
+        <p>Belum punya akun? <button onclick="showRegister()">Daftar</button></p>
+      `;
+    }
+
+    function showRegister() {
+      document.getElementById('app').innerHTML = `
+        <h2>Daftar</h2>
+        <input id="reg-user" placeholder="Username (3-8 karakter)" /><br/>
+        <input id="reg-pass" placeholder="Password" type="password" /><br/>
+        <button onclick="register()">Daftar</button>
+        <button onclick="showLogin()">Kembali</button>
+      `;
+    }
+
+    function register() {
+      const user = document.getElementById('reg-user').value;
+      const pass = document.getElementById('reg-pass').value;
+      if (/^[a-zA-Z0-9]{3,8}$/.test(user) && pass) {
+        alert('Akun berhasil dibuat!');
+        showLogin();
+      } else {
+        alert('Username harus 3-8 karakter, huruf atau angka.');
+      }
+    }
+
+    function login() {
+      const user = document.getElementById('login-user').value;
+      const pass = document.getElementById('login-pass').value;
+      if (user === 'admin' && pass === 'admin123') {
+        currentUser = 'admin';
+      } else if (user && pass) {
+        currentUser = user;
+      } else {
+        alert('Isi semua kolom');
+        return;
+      }
+      localStorage.setItem('currentUser', currentUser);
+      showShop();
+    }
+
+    function showShop() {
+      let html = `<h2>Katalog Produk</h2>`;
+      products.forEach((p, i) => {
+        html += `
+          <div class="product" onclick="showDetail(${i})">
+            <img src="${p.image}" alt="${p.name}"/>
+            <div>
+              <h4>${p.name}</h4>
+              <p>Rp ${p.price.toLocaleString()}</p>
+              <small>${p.stok ? 'Tersedia' : '<span style="color:red">Sold Out</span>'}</small>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `<hr><h2>Katalog Game</h2>`;
+      games.forEach((g, i) => {
+        html += `
+          <div class="game-box">
+            <img src="${g.image}" alt="${g.name}"/>
+            <div>
+              <h4>${g.name}</h4>
+              <p>${g.desc}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `<hr><button class="cart-btn" onclick="showCart()">🛒 Lihat Troli (${cart.length})</button>`;
+      if (currentUser === 'admin') html += `<button onclick="showAdminPanel()">🔧 Admin Panel</button>`;
+      document.getElementById('app').innerHTML = html;
+    }
+    function showDetail(index) {
+      const p = products[index];
+      document.getElementById('app').innerHTML = `
+        <h2>${p.name}</h2>
+        <img src="${p.image}" width="200"><br>
+        <p>${p.desc}</p>
+        <p>Harga: <b>Rp ${p.price.toLocaleString()}</b></p>
+        <label>Jumlah: <input type="number" id="qty" value="1" min="1"></label><br>
+        <button onclick="addToCart(${index})">Tambah ke Troli</button>
+        <button onclick="pesanWhatsApp('${p.name}')">Pesan Sekarang</button>
+        <br><br><button onclick="showShop()">⬅️ Kembali</button>
+      `;
+    }
+
+    function pesanWhatsApp(namaProduk) {
+      const qty = document.getElementById('qty').value;
+      const no = "6281234567890";
+      const pesan = encodeURIComponent(`Halo Admin, saya ingin pesan produk: ${namaProduk} sebanyak ${qty}`);
+      window.open(`https://wa.me/${no}?text=${pesan}`, '_blank');
+    }
+
+    function addToCart(index) {
+      const qty = parseInt(document.getElementById('qty').value);
+      if (qty >= 1) {
+        cart.push({ ...products[index], qty });
+        alert("Produk ditambahkan ke troli!");
+        showShop();
+      } else {
+        alert("Jumlah minimal 1");
+      }
+    }
+
+    function showCart() {
+      let html = `<h2>Troli</h2>`;
+      if (cart.length === 0) {
+        html += `<p>Troli kosong.</p>`;
+      } else {
+        let total = 0;
+        cart.forEach((item, i) => {
+          const subtotal = item.qty * item.price;
+          total += subtotal;
+          html += `
+            <div>
+              ${item.name} x${item.qty} = Rp ${subtotal.toLocaleString()}
+              <button onclick="hapusCart(${i})">❌</button>
+            </div>
+          `;
+        });
+        html += `<hr><h3>Total: Rp ${total.toLocaleString()}</h3>`;
+      }
+      html += `<br><button onclick="showShop()">⬅️ Kembali</button>`;
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function hapusCart(index) {
+      cart.splice(index, 1);
+      showCart();
+    }
+
+    function showAdminPanel() {
+      let html = `<h2>Admin Panel</h2><h3>Edit Produk</h3>`;
+      html += `<table><tr><th>Nama</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr>`;
+      products.forEach((p, i) => {
+        html += `
+          <tr>
+            <td>${p.name}</td>
+            <td><input value="${p.price}" onchange="products[${i}].price=this.value"/></td>
+            <td>
+              <select onchange="products[${i}].stok=this.value==='true'">
+                <option value="true" ${p.stok ? 'selected' : ''}>Tersedia</option>
+                <option value="false" ${!p.stok ? 'selected' : ''}>Sold Out</option>
+              </select>
+            </td>
+            <td><button onclick="hapusProduk(${i})">Hapus</button></td>
+          </tr>
+        `;
+      });
+      html += `</table>`;
+
+      html += `
+        <h3>Tambah Produk Baru</h3>
+        <div class="form-group">
+          <input id="newName" placeholder="Nama Produk"><br>
+          <input id="newImg" placeholder="URL Gambar"><br>
+          <input id="newPrice" type="number" placeholder="Harga"><br>
+          <textarea id="newDesc" placeholder="Deskripsi"></textarea><br>
+          <select id="newStok">
+            <option value="true">Tersedia</option>
+            <option value="false">Sold Out</option>
+          </select><br>
+          <button onclick="tambahProduk()">Tambah</button>
+        </div>
+      `;
+
+      html += `
+        <h3>Edit Katalog Game</h3>
+        <table><tr><th>Nama</th><th>Deskripsi</th><th>Aksi</th></tr>`;
+      games.forEach((g, i) => {
+        html += `
+          <tr>
+            <td><input value="${g.name}" onchange="games[${i}].name=this.value"/></td>
+            <td><input value="${g.desc}" onchange="games[${i}].desc=this.value"/></td>
+            <td><button onclick="hapusGame(${i})">Hapus</button></td>
+          </tr>
+        `;
+      });
+      html += `</table>`;
+
+      html += `
+        <h3>Tambah Game Baru</h3>
+        <input id="gname" placeholder="Nama Game"><br>
+        <input id="gimg" placeholder="URL Gambar"><br>
+        <textarea id="gdesc" placeholder="Deskripsi Game"></textarea><br>
+        <button onclick="tambahGame()">Tambah Game</button><br><br>
+        <button onclick="showShop()">⬅️ Kembali</button>
+      `;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function tambahProduk() {
+      const name = document.getElementById('newName').value;
+      const image = document.getElementById('newImg').value;
+      const price = parseInt(document.getElementById('newPrice').value);
+      const desc = document.getElementById('newDesc').value;
+      const stok = document.getElementById('newStok').value === 'true';
+      if (name && image && price && desc) {
+        products.push({ name, image, price, desc, stok });
+        alert("Produk berhasil ditambahkan!");
+        showAdminPanel();
+      } else {
+        alert("Isi semua kolom");
+      }
+    }
+
+    function tambahGame() {
+      const name = document.getElementById('gname').value;
+      const image = document.getElementById('gimg').value;
+      const desc = document.getElementById('gdesc').value;
+      if (name && image && desc) {
+        games.push({ name, image, desc });
+        alert("Game ditambahkan!");
+        showAdminPanel();
+      } else {
+        alert("Isi semua kolom game");
+      }
+    }
+
+    function hapusProduk(i) {
+      if (confirm("Hapus produk ini?")) {
+        products.splice(i, 1);
+        showAdminPanel();
+      }
+    }
+
+    function hapusGame(i) {
+      if (confirm("Hapus katalog game ini?")) {
+        games.splice(i, 1);
+        showAdminPanel();
+      }
+    }
+  </script>
+</body>
+</html>
